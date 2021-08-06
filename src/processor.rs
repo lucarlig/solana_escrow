@@ -1,4 +1,4 @@
-use crate::{instruction::EscrowInstruction, error::EscrowError, state::Escrow};
+use crate::{error::EscrowError, instruction::EscrowInstruction, state::Escrow};
 
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -57,6 +57,14 @@ impl Processor {
         if escrow_info.is_initialized() {
             return Err(ProgramError::AccountAlreadyInitialized);
         }
+
+        escrow_info.is_initialized = true;
+        escrow_info.initializer_pubkey = *initializer.key;
+        escrow_info.temp_token_account_pubkey = *temp_token_account.key;
+        escrow_info.initializer_token_to_receive_account_pubkey = *token_to_receive_account.key;
+        escrow_info.expected_amount = amount;
+
+        Escrow::pack(escrow_info, &mut escrow_account.data.borrow_mut())?;
         Ok(())
     }
 }
